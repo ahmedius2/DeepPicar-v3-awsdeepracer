@@ -72,7 +72,7 @@ After you are done trainig, you need to copy the trained tflite model file (`lar
     $ python3 -m uploadserver --directory models/
 
 On your PC, use your browser to upload the tflite model file to the Pi. 
-On the browser URL bar, enter `https://<ip_addr_of_your_pi>:8000/upload`. 
+On the browser URL bar, enter `http://<ip_addr_of_your_pi>:8000/upload`. 
 Then, select the downloaded tflite file via `Browse...` and click `Submit Query` to upload the file.
 
 ## Autonomous control
