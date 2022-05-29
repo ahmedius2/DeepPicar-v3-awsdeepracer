@@ -47,7 +47,7 @@ Use the keys to manually control the car. Once you become confident in controlli
 
 The data collection can be enabled and stopped by pressing `r` key. Once recording is enabled, the video feed and the corresponding control inputs are stored in `out-video.avi` and `out-key.csv` files, respectively. Later, we will use these files for training. 
 
-Rename recorded avi and csv files to out-video-XX.avi and out-video-XX.csv where XX with appropriate numbers. 
+Rename recorded avi and csv files to out-video-XX.avi and out-key-XX.csv where XX with appropriate numbers. 
 
 Compress all the recorded files into a single zip file, say Dataset.zip, and copy the file to the host PC. 
 
