@@ -10,13 +10,13 @@ import params
 import argparse
 
 from PIL import Image, ImageDraw
-import input_kbd
 
 ##########################################################
 # import deeppicar's sensor/actuator modules
 ##########################################################
 camera   = __import__(params.camera)
 actuator = __import__(params.actuator)
+inputdev = __import__(params.inputdev)
 
 ##########################################################
 # global variable initialization
@@ -142,9 +142,10 @@ while True:
 
     if view_video == True:
         cv2.imshow('frame', frame)
-        ch = cv2.waitKey(1) & 0xFF
-    else:
-        ch = ord(input_kbd.read_single_keypress())
+        cv2.waitKey(1) & 0xFF
+
+    # receive input (must be non blocking)
+    ch = inputdev.read_single_event()
 
     if ch == ord('j'): # left 
         angle = deg2rad(-30)

@@ -46,13 +46,16 @@ def read_single_keypress():
     stop(state)
     return input
 
+def read_single_event():
+    return ord(read_single_keypress()) # return unicode key value
+
 if __name__ == "__main__":
 
     while True:
-        key = read_single_keypress()
-        if key == "q":
+        key = read_single_event()
+        if key == ord('q'):
             break
-        elif key != ' ':
+        elif key != ord(' '):
             print ("%s pressed\r" % key)
         
 
