@@ -206,7 +206,7 @@ while True:
     if enable_record == True and frame_id == 0:
         # create files for data recording
         keyfile = open(params.rec_csv_file, 'w+')
-        keyfile.write("ts_micro,frame,wheel\n")
+        keyfile.write("ts,frame,wheel\n") # ts (ms)
         try:
             fourcc = cv2.cv.CV_FOURCC(*'XVID')
         except AttributeError as e:
