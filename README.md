@@ -29,7 +29,7 @@ In addition, you need to install necessary python drivers. For polulu drv8835, d
     
 ## Manual control and Data collection
 
-    $ sudo python3 deeppicar-kbd.py
+    $ sudo python3 deeppicar.py
 
 The key commands for controlling the DeepPicar are as follows:
 
@@ -81,7 +81,7 @@ Copy the trained model to the DeepPicar.
 
 Enable autonomous driving by suppling `-d` command line argument as below. 
 
-    $ sudo python3 deeppicar-kbd.py -d 
+    $ sudo python3 deeppicar.py -d 
 
 You can start/stop autonomous driving by pressing `d` key while running the program. 
 Note that you still need to initiate a forward movement by pressing `a` because the DNN only controls steering.  
