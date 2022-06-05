@@ -3,7 +3,7 @@ from threading import Thread,Lock
 import time
 
 use_thread = False
-need_flip = False
+need_flip = True
 cap = None
 frame = None
 
@@ -29,7 +29,8 @@ def init(res=(320, 240), fps=30, threading=True):
         time.sleep(1.0)
     else:
         print ("No camera threading.")
-
+    if need_flip == True:
+        print ("camera is Flipped")
     print ("camera init completed.")
 
 def __update():
