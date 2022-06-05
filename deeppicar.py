@@ -87,7 +87,7 @@ def overlay_image(l_img, s_img, x_offset, y_offset):
 parser = argparse.ArgumentParser(description='DeepPicar main')
 parser.add_argument("-d", "--dnn", help="Enable DNN", action="store_true")
 parser.add_argument("-t", "--throttle", help="throttle percent. [0-100]%", type=int)
-parser.add_argument("-n", "--ncpu", help="number of cores to use.", type=int, default=1)
+parser.add_argument("-n", "--ncpu", help="number of cores to use.", type=int, default=2)
 parser.add_argument("-f", "--hz", help="control frequnecy", type=int)
 parser.add_argument("--fpvvideo", help="Take FPV video of DNN driving", action="store_true")
 args = parser.parse_args()
