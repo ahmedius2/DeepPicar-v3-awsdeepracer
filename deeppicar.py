@@ -26,10 +26,10 @@ use_thread = True
 view_video = False
 fpv_video = False
 enable_record = False
-
 cfg_cam_res = (320, 240)
 cfg_cam_fps = 30
 cfg_throttle = 50 # 50% power.
+TURN_THRESH = 15  # 15' left or right steering
 
 frame_id = 0
 angle = 0.0
@@ -187,13 +187,13 @@ while True:
         interpreter.invoke()
         angle = interpreter.get_tensor(output_index)[0][0]
         degree = rad2deg(angle)
-        if degree <= -15:
+        if degree <= -TURN_THRESH:
             actuator.left()
             print ("left (CPU)")
-        elif degree < 15 and degree > -15:
+        elif degree < TURN_THRESH and degree > -TURN_THRESH:
             actuator.center()
             print ("center (CPU)")
-        elif degree >= 15:
+        elif degree >= TURN_THRESH:
             actuator.right()
             print ("right (CPU)")
 
