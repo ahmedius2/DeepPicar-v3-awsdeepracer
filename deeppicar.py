@@ -89,6 +89,7 @@ parser.add_argument("--turnthresh", help="throttle percent. [0-30]degree", type=
 parser.add_argument("-n", "--ncpu", help="number of cores to use.", type=int, default=2)
 parser.add_argument("-f", "--hz", help="control frequnecy", type=int)
 parser.add_argument("--fpvvideo", help="Take FPV video of DNN driving", action="store_true")
+parser.add_argument("--use_tensorflow", help="use the full tensorflow instead of tflite", action="store_true")
 args = parser.parse_args()
 
 if args.dnn:
@@ -111,18 +112,23 @@ if args.fpvvideo:
 # import deeppicar's DNN model
 ##########################################################
 print ("Loading model: " + params.model_file)
-try:
-    # Import TFLite interpreter from tflite_runtime package if it's available.
-    from tflite_runtime.interpreter import Interpreter
-    interpreter = Interpreter(params.model_file+'.tflite', num_threads=args.ncpu)
-except ImportError:
-    # If not, fallback to use the TFLite interpreter from the full TF package.
-    import tensorflow as tf
-    interpreter = tf.lite.Interpreter(model_path=params.model_file+'.tflite', num_threads=args.ncpu)
 
-interpreter.allocate_tensors()
-input_index = interpreter.get_input_details()[0]["index"]
-output_index = interpreter.get_output_details()[0]["index"]
+if args.use_tensorflow:
+    from tensorflow import keras
+    model = keras.models.load_model(params.model_file+'.h5')
+else:
+    try:
+        # Import TFLite interpreter from tflite_runtime package if it's available.
+        from tflite_runtime.interpreter import Interpreter
+        interpreter = Interpreter(params.model_file+'.tflite', num_threads=args.ncpu)
+    except ImportError:
+        # If not, fallback to use the TFLite interpreter from the full TF package.
+        import tensorflow as tf
+        interpreter = tf.lite.Interpreter(model_path=params.model_file+'.tflite', num_threads=args.ncpu)
+
+    interpreter.allocate_tensors()
+    input_index = interpreter.get_input_details()[0]["index"]
+    output_index = interpreter.get_output_details()[0]["index"]
 
 # initlaize deeppicar modules
 actuator.init(args.throttle)
@@ -184,19 +190,23 @@ while True:
         # 1. machine input
         img = preprocess(frame)
         img = np.expand_dims(img, axis=0).astype(np.float32)
-        interpreter.set_tensor(input_index, img)
-        interpreter.invoke()
-        angle = interpreter.get_tensor(output_index)[0][0]
+        if args.use_tensorflow:
+            angle = model.predict(img)[0]
+        else:
+            interpreter.set_tensor(input_index, img)
+            interpreter.invoke()
+            angle = interpreter.get_tensor(output_index)[0][0]
+
         degree = rad2deg(angle)
         if degree <= -args.turnthresh:
             actuator.left()
-            print ("left (CPU)")
+            print ("left (%d) by CPU" % (degree))
         elif degree < args.turnthresh and degree > -args.turnthresh:
             actuator.center()
-            print ("center (CPU)")
+            print ("center (%d) by CPU" % (degree))
         elif degree >= args.turnthresh:
             actuator.right()
-            print ("right (CPU)")
+            print ("right (%d) by CPU" % (degree))
 
     dur = time.time() - ts
     if dur > period:
