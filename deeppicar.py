@@ -28,8 +28,6 @@ fpv_video = False
 enable_record = False
 cfg_cam_res = (320, 240)
 cfg_cam_fps = 30
-cfg_throttle = 50 # 50% power.
-TURN_THRESH = 15  # 15' left or right steering
 
 frame_id = 0
 angle = 0.0
@@ -86,7 +84,8 @@ def overlay_image(l_img, s_img, x_offset, y_offset):
 
 parser = argparse.ArgumentParser(description='DeepPicar main')
 parser.add_argument("-d", "--dnn", help="Enable DNN", action="store_true")
-parser.add_argument("-t", "--throttle", help="throttle percent. [0-100]%", type=int)
+parser.add_argument("-t", "--throttle", help="throttle percent. [0-100]%", type=int, default=50)
+parser.add_argument("--turnthresh", help="throttle percent. [0-30]degree", type=int, default=10)
 parser.add_argument("-n", "--ncpu", help="number of cores to use.", type=int, default=2)
 parser.add_argument("-f", "--hz", help="control frequnecy", type=int)
 parser.add_argument("--fpvvideo", help="Take FPV video of DNN driving", action="store_true")
@@ -96,8 +95,10 @@ if args.dnn:
     print ("DNN is on")
     use_dnn = True
 if args.throttle:
-    cfg_throttle = args.throttle
     print ("throttle = %d pct" % (args.throttle))
+if args.turnthresh:
+    args.turnthresh = args.turnthresh
+    print ("turn angle threshold = %d degree\n" % (args.turnthresh))
 if args.hz:
     period = 1.0/args.hz
     print("new period: ", period)
@@ -124,7 +125,7 @@ input_index = interpreter.get_input_details()[0]["index"]
 output_index = interpreter.get_output_details()[0]["index"]
 
 # initlaize deeppicar modules
-actuator.init(cfg_throttle)
+actuator.init(args.throttle)
 camera.init(res=cfg_cam_res, fps=cfg_cam_fps, threading=use_thread)
 atexit.register(turn_off)
 
@@ -187,13 +188,13 @@ while True:
         interpreter.invoke()
         angle = interpreter.get_tensor(output_index)[0][0]
         degree = rad2deg(angle)
-        if degree <= -TURN_THRESH:
+        if degree <= -args.turnthresh:
             actuator.left()
             print ("left (CPU)")
-        elif degree < TURN_THRESH and degree > -TURN_THRESH:
+        elif degree < args.turnthresh and degree > -args.turnthresh:
             actuator.center()
             print ("center (CPU)")
-        elif degree >= TURN_THRESH:
+        elif degree >= args.turnthresh:
             actuator.right()
             print ("right (CPU)")
 
