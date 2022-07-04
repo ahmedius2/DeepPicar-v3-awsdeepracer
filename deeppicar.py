@@ -55,8 +55,17 @@ def turn_off():
         keyfile.close()
         vidfile.release()
 
+def crop_image(img):
+    scaled_img = cv2.resize(img, (max(int(params.img_height * 4 / 3), params.img_width), params.img_height))
+    fb_h, fb_w, fb_c = scaled_img.shape
+    # print(scaled_img.shape)
+    startx = int((fb_w - params.img_width) / 2);
+    starty = int((fb_h - params.img_height) / 2);
+    return scaled_img[starty:starty+params.img_height, startx:startx+params.img_width,:]
+
 def preprocess(img):
-    img = cv2.resize(img, (params.img_width, params.img_height))
+    # img = cv2.resize(img, (params.img_width, params.img_height))
+    img = crop_image(img)
     # Convert to grayscale and readd channel dimension
     if params.img_channels == 1:
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
