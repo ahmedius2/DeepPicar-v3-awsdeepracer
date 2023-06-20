@@ -3,14 +3,14 @@
 # camera module selection
 #   "camera-webcam" "camera-null"
 ##########################################################
-camera="camera-webcam"
+camera="camera-esp32web"
 
 ##########################################################
 # actuator selection
 #   "actuator-drv8835", "actuator-adafruit_hat"
 #   "actuator-null"
 ##########################################################
-actuator="actuator-drv8835"
+actuator="actuator-esp32web"
 
 ##########################################################
 # intputdev selection
