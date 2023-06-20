@@ -55,8 +55,19 @@ def turn_off():
         keyfile.close()
         vidfile.release()
 
+def crop_image(img):
+    scaled_img = cv2.resize(img, (max(int(params.img_height * 4 / 3), params.img_width), params.img_height))
+    fb_h, fb_w, fb_c = scaled_img.shape
+    # print(scaled_img.shape)
+    startx = int((fb_w - params.img_width) / 2);
+    starty = int((fb_h - params.img_height) / 2);
+    return scaled_img[starty:starty+params.img_height, startx:startx+params.img_width,:]
+
 def preprocess(img):
-    img = cv2.resize(img, (params.img_width, params.img_height))
+    if args.pre == "crop":
+        img = crop_image(img)
+    else:
+        img = cv2.resize(img, (params.img_width, params.img_height))
     # Convert to grayscale and readd channel dimension
     if params.img_channels == 1:
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -90,6 +101,7 @@ parser.add_argument("-n", "--ncpu", help="number of cores to use.", type=int, de
 parser.add_argument("-f", "--hz", help="control frequnecy", type=int)
 parser.add_argument("--fpvvideo", help="Take FPV video of DNN driving", action="store_true")
 parser.add_argument("--use_tensorflow", help="use the full tensorflow instead of tflite", action="store_true")
+parser.add_argument("--pre", help="preprocessing [resize|crop]", type=str, default="resize")
 args = parser.parse_args()
 
 if args.dnn:
@@ -107,12 +119,14 @@ if args.fpvvideo:
     fpv_video = True
     print("FPV video of DNN driving is on")
 
+print ("preprocessing:", args.pre)
 
 ##########################################################
 # import deeppicar's DNN model
 ##########################################################
 print ("Loading model: " + params.model_file)
 
+print("use_tensorflow:", args.use_tensorflow)
 if args.use_tensorflow:
     from tensorflow import keras
     model = keras.models.load_model(params.model_file+'.h5')
@@ -122,9 +136,14 @@ else:
         from tflite_runtime.interpreter import Interpreter
         interpreter = Interpreter(params.model_file+'.tflite', num_threads=args.ncpu)
     except ImportError:
-        # If not, fallback to use the TFLite interpreter from the full TF package.
-        import tensorflow as tf
-        interpreter = tf.lite.Interpreter(model_path=params.model_file+'.tflite', num_threads=args.ncpu)
+        # Import TFLMicro interpreter
+        try:
+            from tflite_micro_runtime.interpreter import Interpreter 
+            interpreter = Interpreter(params.model_file+'.tflite')
+        except:
+            # If all failed, fallback to use the TFLite interpreter from the full TF package.
+            import tensorflow as tf
+            interpreter = tf.lite.Interpreter(model_path=params.model_file+'.tflite', num_threads=args.ncpu)
 
     interpreter.allocate_tensors()
     input_index = interpreter.get_input_details()[0]["index"]
