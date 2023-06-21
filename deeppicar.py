@@ -89,6 +89,29 @@ def overlay_image(l_img, s_img, x_offset, y_offset):
                   (1.0 - s_img[:,:,3]/255.0))
     return l_img
 
+def measure_execution_time(func, num_trials):
+    execution_times = []
+    for _ in range(num_trials):
+        start_time = time.time()
+        func()  # Call the function to measure its execution time
+        end_time = time.time()
+        execution_time = end_time - start_time
+        execution_times.append(execution_time)
+    # Calculate statistics
+    avg = np.mean(execution_times)
+    min = np.min(execution_times)
+    max = np.max(execution_times)
+    p99 = np.percentile(execution_times, 99)
+    p90 = np.percentile(execution_times, 90)
+    p50 = np.percentile(execution_times, 50)
+
+    print(f"Average Execution Time: {avg:.6f} seconds")
+    print(f"Minimum Execution Time: {min:.6f} seconds")
+    print(f"Maximum Execution Time: {max:.6f} seconds")
+    print(f"99th Percentile Execution Time: {p99:.6f} seconds")
+    print(f"90th Percentile Execution Time: {p90:.6f} seconds")
+    print(f"50th Percentile Execution Time: {p50:.6f} seconds")
+
 ##########################################################
 # program begins
 ##########################################################
@@ -119,7 +142,8 @@ if args.fpvvideo:
     fpv_video = True
     print("FPV video of DNN driving is on")
 
-print ("preprocessing:", args.pre)
+print("period (sec):", period)
+print("preprocessing:", args.pre)
 
 ##########################################################
 # import deeppicar's DNN model
@@ -148,6 +172,7 @@ else:
     interpreter.allocate_tensors()
     input_index = interpreter.get_input_details()[0]["index"]
     output_index = interpreter.get_output_details()[0]["index"]
+
 
 # initlaize deeppicar modules
 actuator.init(args.throttle)
@@ -194,6 +219,10 @@ while True:
     elif ch == ord('z'):
         actuator.rew()
         print ("reverse")
+    elif ch == ord('m'):
+        n_trials=1000
+        print("actuator latency measumenets: {} trials".format(n_trials))
+        measure_execution_time(actuator.left, n_trials)
     elif ch == ord('r'):
         print ("toggle record mode")
         enable_record = not enable_record
@@ -231,8 +260,8 @@ while True:
     if dur > period:
         print("%.3f: took %d ms - deadline miss."
               % (ts - start_ts, int(dur * 1000)))
-    else:
-        print("%.3f: took %d ms" % (ts - start_ts, int(dur * 1000)))
+    # else:
+    #     print("%.3f: took %d ms" % (ts - start_ts, int(dur * 1000)))
 
     if enable_record == True and frame_id == 0:
         # create files for data recording

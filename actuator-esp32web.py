@@ -18,25 +18,26 @@ def get_speed():
 def init(default_speed=100):
     set_speed(default_speed)
     stop()
+
 def stop():
     requests.get(URL + "/control?var=stop&val={}".format(0))
-    print("stop")
+
 def ffw():
     requests.get(URL + "/control?var=forward&val={}".format(0))
-    print("ffw")
+
 def rew():
     requests.get(URL + "/control?var=backward&val={}".format(0))
-    print("rew")
+
 # steering
 def center():
     requests.get(URL + "/control?var=center&val={}".format(0))
-    print("center")
+
 def left():
     requests.get(URL + "/control?var=left&val={}".format(0))
-    print("left")
+
 def right():
     requests.get(URL + "/control?var=right&val={}".format(0))
-    print("right")
+
 
 # exit    
 def turn_off():
@@ -47,13 +48,17 @@ if __name__ == "__main__":
     init()
     time.sleep(1)
     left()
+    print("left")
     time.sleep(1)    
     right()
+    print("right")
     time.sleep(1)    
     center()
+    print("right")
     time.sleep(1)
     ffw()
+    print("ffw")
     time.sleep(1)    
     rew()
+    print("rew")
     time.sleep(1)    
-
