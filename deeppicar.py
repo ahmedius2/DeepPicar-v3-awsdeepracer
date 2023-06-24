@@ -89,14 +89,7 @@ def overlay_image(l_img, s_img, x_offset, y_offset):
                   (1.0 - s_img[:,:,3]/255.0))
     return l_img
 
-def measure_execution_time(func, num_trials):
-    execution_times = []
-    for _ in range(num_trials):
-        start_time = time.time()
-        func()  # Call the function to measure its execution time
-        end_time = time.time()
-        execution_time = end_time - start_time
-        execution_times.append(execution_time)
+def print_stats(execution_times):
     # Calculate statistics
     avg = np.mean(execution_times)
     min = np.min(execution_times)
@@ -111,6 +104,17 @@ def measure_execution_time(func, num_trials):
     print(f"99th Percentile Execution Time: {p99:.6f} seconds")
     print(f"90th Percentile Execution Time: {p90:.6f} seconds")
     print(f"50th Percentile Execution Time: {p50:.6f} seconds")
+
+def measure_execution_time(func, num_trials):
+    execution_times = []
+    for _ in range(num_trials):
+        start_time = time.time()
+        func()  # Call the function to measure its execution time
+        end_time = time.time()
+        execution_time = end_time - start_time
+        execution_times.append(execution_time)
+    # Calculate statistics
+    print_stats(execution_times)
 
 ##########################################################
 # program begins
@@ -184,6 +188,8 @@ start_ts = time.time()
 
 frame_arr = []
 angle_arr = []
+actuator_times = []
+
 # enter main loop
 while True:
     if use_thread:
@@ -197,27 +203,33 @@ while True:
 
     # receive input (must be non blocking)
     ch = inputdev.read_single_event()
-
+    
     if ch == ord('j'): # left 
         angle = deg2rad(-30)
         actuator.left()
+        actuator_times.append(time.time() - ts)
         print ("left")
     elif ch == ord('k'): # center 
         angle = deg2rad(0)
         actuator.center()
+        actuator_times.append(time.time() - ts)
         print ("center")
     elif ch == ord('l'): # right
         angle = deg2rad(30)
         actuator.right()
+        actuator_times.append(time.time() - ts)
         print ("right")
     elif ch == ord('a'):
         actuator.ffw()
+        actuator_times.append(time.time() - ts)
         print ("accel")
     elif ch == ord('s'):
         actuator.stop()
+        actuator_times.append(time.time() - ts)
         print ("stop")
     elif ch == ord('z'):
         actuator.rew()
+        actuator_times.append(time.time() - ts)
         print ("reverse")
     elif ch == ord('m'):
         n_trials=1000
@@ -234,7 +246,8 @@ while True:
         use_dnn = not use_dnn
     elif ch == ord('q'):
         break
-    elif use_dnn == True:
+
+    if use_dnn == True:
         # 1. machine input
         img = preprocess(frame)
         img = np.expand_dims(img, axis=0).astype(np.float32)
@@ -262,7 +275,7 @@ while True:
               % (ts - start_ts, int(dur * 1000)))
     # else:
     #     print("%.3f: took %d ms" % (ts - start_ts, int(dur * 1000)))
-
+    
     if enable_record == True and frame_id == 0:
         # create files for data recording
         keyfile = open(params.rec_csv_file, 'w+')
@@ -303,4 +316,6 @@ while True:
            (ts, frame_id, angle, int((time.time() - ts)*1000)))
 
 print ("Finish..")
+print ("Actuator latency measurements: {} trials".format(len(actuator_times)))
+print_stats(actuator_times)
 turn_off()

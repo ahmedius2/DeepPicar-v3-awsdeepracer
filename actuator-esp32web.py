@@ -1,7 +1,6 @@
 import requests
 import time
-
-URL = "http://192.168.1.200"
+from params import URL
 cur_speed = 100 # throttle
 
 def set_speed(speed):

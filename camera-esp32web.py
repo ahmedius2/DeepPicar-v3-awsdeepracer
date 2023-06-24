@@ -2,23 +2,35 @@ import cv2
 from threading import Thread,Lock
 import time
 import requests
+from params import URL
 
 use_thread = False
 need_flip = False
 cap = None
 frame = None
-URL = "http://192.168.1.200"
 
 # public API
 # init(), read_frame(), stop()
 
-def init(res=(320, 240), fps=30, threading=True):
+def init(res=(160, 120), fps=30, threading=True):
     print ("Initilize camera.")
     global cap, use_thread, frame, cam_thr
-
+    cam_res = 1
     cap = cv2.VideoCapture(URL + ":81/stream")
-    requests.get(URL + "/control?var=framesize&val={}".format(1))
-
+    if not cap.isOpened():
+        print ("Cannot open camera.")
+        return    
+    # 0 - 96x96, 1 - 160x120, 2 - 176x144, 3 - 320x240, 4 - 352x288, 
+    # 5 - 640x480, 6 - 800x600, 7 - 1024x768, 8 - 1280x1024, 9 - 1600x1200
+    if res == (96, 96): cam_res = 0
+    elif res == (160, 120): cam_res = 1
+    elif res == (176, 144): cam_res = 2
+    elif res == (320, 240): cam_res = 3
+    else:
+        print ("Camera resolution not supported.")
+        return
+    requests.get(URL + "/control?var=framesize&val={}".format(cam_res)) 
+    
     # start the camera thread
     if threading:
         use_thread = True
