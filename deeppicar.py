@@ -26,7 +26,7 @@ use_thread = True
 view_video = False
 fpv_video = False
 enable_record = False
-cfg_cam_res = (320, 240)
+cfg_cam_res = (160, 120)
 cfg_cam_fps = 30
 
 frame_id = 0
