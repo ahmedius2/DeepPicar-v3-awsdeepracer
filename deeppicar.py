@@ -127,7 +127,7 @@ parser.add_argument("--turnthresh", help="throttle percent. [0-30]degree", type=
 parser.add_argument("-n", "--ncpu", help="number of cores to use.", type=int, default=2)
 parser.add_argument("-f", "--hz", help="control frequnecy", type=int)
 parser.add_argument("--fpvvideo", help="Take FPV video of DNN driving", action="store_true")
-parser.add_argument("--use_tensorflow", help="use the full tensorflow instead of tflite", action="store_true")
+parser.add_argument("--use", help="use [tflite|tf|openvino]", type=str, default="tflite")
 parser.add_argument("--pre", help="preprocessing [resize|crop]", type=str, default="resize")
 args = parser.parse_args()
 
@@ -154,10 +154,15 @@ print("preprocessing:", args.pre)
 ##########################################################
 print ("Loading model: " + params.model_file)
 
-print("use_tensorflow:", args.use_tensorflow)
-if args.use_tensorflow:
+print("use:", args.use)
+if args.use == "tf":
     from tensorflow import keras
     model = keras.models.load_model(params.model_file+'.h5')
+elif args.use == "openvino":
+    import openvino as ov
+    core = ov.Core()
+    ov_model = core.read_model(params.model_file+'.tflite')
+    model = core.compile_model(ov_model, 'AUTO')
 else:
     try:
         # Import TFLite interpreter from tflite_runtime package if it's available.
@@ -251,8 +256,11 @@ while True:
         # 1. machine input
         img = preprocess(frame)
         img = np.expand_dims(img, axis=0).astype(np.float32)
-        if args.use_tensorflow:
+        if args.use == "tf":
             angle = model.predict(img)[0]
+        elif args.use == "openvino":
+            angle = model(img)[0][0][0]
+            # print ('angle:', angle);
         else:
             interpreter.set_tensor(input_index, img)
             interpreter.invoke()
@@ -269,12 +277,12 @@ while True:
             actuator.right()
             print ("right (%d) by CPU" % (degree))
 
-    dur = time.time() - ts
-    if dur > period:
-        print("%.3f: took %d ms - deadline miss."
-              % (ts - start_ts, int(dur * 1000)))
-    # else:
-    #     print("%.3f: took %d ms" % (ts - start_ts, int(dur * 1000)))
+        dur = time.time() - ts
+        if dur > period:
+            print("%.3f: took %d ms - deadline miss."
+                  % (ts - start_ts, int(dur * 1000)))
+        else:
+            print("%.3f: took %d ms" % (ts - start_ts, int(dur * 1000)))
     
     if enable_record == True and frame_id == 0:
         # create files for data recording
