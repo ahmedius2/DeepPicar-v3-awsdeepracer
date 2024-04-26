@@ -3,7 +3,7 @@
 # camera module selection
 #   "camera-webcam" "camera-null"
 ##########################################################
-camera="camera-esp32web"
+camera="camera-webcam"
 # URL="http://192.168.1.194"
 # URL="http://192.168.1.200"
 URL="http://192.168.4.1"
@@ -13,7 +13,7 @@ URL="http://192.168.4.1"
 #   "actuator-drv8835", "actuator-adafruit_hat"
 #   "actuator-null"
 ##########################################################
-actuator="actuator-esp32web"
+actuator="actuator-null"
 
 ##########################################################
 # intputdev selection

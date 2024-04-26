@@ -195,62 +195,58 @@ frame_arr = []
 angle_arr = []
 actuator_times = []
 
+throttle_pct = 0
+steering_deg = 0
+prev_throttle_pct = -1
+prev_steering_deg = -1
+
 # enter main loop
 while True:
     if use_thread:
         time.sleep(next(g))
     frame = camera.read_frame()
+    if frame is None:
+        print("frame is None")
+        break
     ts = time.time()
-
-    if view_video == True:
-        cv2.imshow('frame', frame)
-        cv2.waitKey(1) & 0xFF
 
     # receive input (must be non blocking)
     ch = inputdev.read_single_event()
     
+    # process input
     if ch == ord('j'): # left 
-        angle = deg2rad(-30)
-        actuator.left()
-        actuator_times.append(time.time() - ts)
-        print ("left")
+        steering_deg = -30
     elif ch == ord('k'): # center 
-        angle = deg2rad(0)
-        actuator.center()
-        actuator_times.append(time.time() - ts)
-        print ("center")
+        steering_deg = 0
     elif ch == ord('l'): # right
-        angle = deg2rad(30)
-        actuator.right()
-        actuator_times.append(time.time() - ts)
-        print ("right")
-    elif ch == ord('a'):
-        actuator.ffw()
-        actuator_times.append(time.time() - ts)
-        print ("accel")
-    elif ch == ord('s'):
-        actuator.stop()
-        actuator_times.append(time.time() - ts)
+        steering_deg = 30
+    elif ch == ord('u'):
+        steering_deg += -10
+    elif ch == ord('o'):
+        steering_deg += 10
+    elif ch == ord('a'): # accel
+        throttle_pct += 5
+        start_ts = ts
+    elif ch == ord('z'): # reverse
+        throttle_pct += -5
+    elif ch == ord('s'): # stop
+        throttle_pct = 0 
         print ("stop")
-    elif ch == ord('z'):
-        actuator.rew()
-        actuator_times.append(time.time() - ts)
-        print ("reverse")
-    elif ch == ord('m'):
-        n_trials=1000
-        print("actuator latency measumenets: {} trials".format(n_trials))
-        measure_execution_time(actuator.left, n_trials)
+        print ("duration: %.2f" % (ts - start_ts))
+        enable_record = False # stop recording as well 
+        args.dnn = False # manual mode
     elif ch == ord('r'):
-        print ("toggle record mode")
         enable_record = not enable_record
+        print ("record mode: ", enable_record)
     elif ch == ord('t'):
         print ("toggle video mode")
         view_video = not view_video
     elif ch == ord('d'):
-        print ("toggle DNN mode")
-        use_dnn = not use_dnn
+        args.dnn = not args.dnn
+        print ("dnn mode:", args.dnn)
     elif ch == ord('q'):
         break
+
 
     if use_dnn == True:
         # 1. machine input
@@ -261,28 +257,28 @@ while True:
         elif args.use == "openvino":
             angle = model(img)[0][0][0]
             # print ('angle:', angle);
-        else:
+        else: # tflite
             interpreter.set_tensor(input_index, img)
             interpreter.invoke()
             angle = interpreter.get_tensor(output_index)[0][0]
 
-        degree = rad2deg(angle)
-        if degree <= -args.turnthresh:
-            actuator.left()
-            print ("left (%d) by CPU" % (degree))
-        elif degree < args.turnthresh and degree > -args.turnthresh:
-            actuator.center()
-            print ("center (%d) by CPU" % (degree))
-        elif degree >= args.turnthresh:
-            actuator.right()
-            print ("right (%d) by CPU" % (degree))
+        steering_deg = rad2deg(angle)
 
-        dur = time.time() - ts
-        if dur > period:
-            print("%.3f: took %d ms - deadline miss."
-                  % (ts - start_ts, int(dur * 1000)))
-        else:
-            print("%.3f: took %d ms" % (ts - start_ts, int(dur * 1000)))
+        actuator.set_steering(steering_deg)
+        actuator.set_throttle(throttle_pct)
+    else:
+        # manual mode
+        if prev_steering_deg != steering_deg: 
+            actuator.set_steering(steering_deg)
+        if prev_throttle_pct != throttle_pct:
+            actuator.set_throttle(throttle_pct)
+
+    dur = time.time() - ts
+    if dur > period:
+        print("%.3f: took %d ms - deadline miss."
+                % (ts - start_ts, int(dur * 1000)))
+    else:
+        print("%.3f: took %d ms" % (ts - start_ts, int(dur * 1000)))
     
     if enable_record == True and frame_id == 0:
         # create files for data recording
@@ -322,8 +318,14 @@ while True:
             break
         print ("%.3f %d %.3f %d(ms)" %
            (ts, frame_id, angle, int((time.time() - ts)*1000)))
+    # update previous steering angle
+
+    if prev_steering_deg != steering_deg or prev_throttle_pct != throttle_pct:
+        prev_steering_deg = steering_deg
+        prev_throttle_pct = throttle_pct
 
 print ("Finish..")
-print ("Actuator latency measurements: {} trials".format(len(actuator_times)))
-print_stats(actuator_times)
+if len(actuator_times):
+    print ("Actuator latency measurements: {} trials".format(len(actuator_times)))
+    print_stats(actuator_times)
 turn_off()
