@@ -21,7 +21,6 @@ inputdev = __import__(params.inputdev)
 ##########################################################
 # global variable initialization
 ##########################################################
-use_dnn = False
 use_thread = True
 view_video = False
 fpv_video = False
@@ -131,9 +130,6 @@ parser.add_argument("--use", help="use [tflite|tf|openvino]", type=str, default=
 parser.add_argument("--pre", help="preprocessing [resize|crop]", type=str, default="resize")
 args = parser.parse_args()
 
-if args.dnn:
-    print ("DNN is on")
-    use_dnn = True
 if args.throttle:
     print ("throttle = %d pct" % (args.throttle))
 if args.turnthresh:
@@ -248,7 +244,7 @@ while True:
         break
 
 
-    if use_dnn == True:
+    if args.dnn == True:
         # 1. machine input
         img = preprocess(frame)
         img = np.expand_dims(img, axis=0).astype(np.float32)
@@ -263,7 +259,7 @@ while True:
             angle = interpreter.get_tensor(output_index)[0][0]
 
         steering_deg = rad2deg(angle)
-
+        # print(steering_deg, angle)
         actuator.set_steering(steering_deg)
         actuator.set_throttle(throttle_pct)
     else:
@@ -298,7 +294,7 @@ while True:
         str = "{},{},{}\n".format(int(ts*1000), frame_id, angle)
         keyfile.write(str)
 
-        if use_dnn and fpv_video:
+        if args.dnn and fpv_video:
             textColor = (255,255,255)
             bgColor = (0,0,0)
             newImage = Image.new('RGBA', (100, 20), bgColor)
