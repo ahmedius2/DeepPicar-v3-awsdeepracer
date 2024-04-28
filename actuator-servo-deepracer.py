@@ -19,7 +19,7 @@ def init(default_speed=50):
 def set_throttle(throttle_pct):
     # throttle_pct: [-100, +100]
     # throttle_pwm: [1046000, 1846000]
-    throttle_pwm = int(1446000 + (throttle_pct * 40000 / 100))
+    throttle_pwm = int(1446000 - (throttle_pct * 400000 / 100))
     print(f"throttle_pct: {throttle_pct} throttle_pwm: {throttle_pwm}")
 
     # Ensure throttle_pwm is within the acceptable range
@@ -33,7 +33,7 @@ def set_throttle(throttle_pct):
 def set_steering(steering_deg):
     # steering_deg: [-90, +90]
     # steering_pwm: [1046000, 1846000]
-    steering_pwm = int(1446000 + (steering_deg * 40000 / 90))
+    steering_pwm = int(1446000 - (steering_deg * 400000 / 90))
     print(f"steering_deg: {steering_deg} steering_pwm: {steering_pwm}")
 
     # Ensure steering_pwm is within the acceptable range
