@@ -277,8 +277,8 @@ while True:
     if dur > period:
         print("%.3f: took %d ms - deadline miss."
                 % (ts - start_ts, int(dur * 1000)))
-    else:
-        print("%.3f: took %d ms" % (ts - start_ts, int(dur * 1000)))
+    # else:
+    #     print("%.3f: took %d ms" % (ts - start_ts, int(dur * 1000)))
     
     if enable_record == True and frame_id == 0:
         # create files for data recording
