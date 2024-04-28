@@ -31,9 +31,9 @@ def set_throttle(throttle_pct):
         print(f"Failed to set throttle: {e}")
 
 def set_steering(steering_deg):
-    # steering_deg: [-90, +90]
+    # steering_deg: [-30, +30]
     # steering_pwm: [1046000, 1846000]
-    steering_pwm = int(1446000 - (steering_deg * 400000 / 90))
+    steering_pwm = int(1446000 - (steering_deg * 400000 / 30))
     print(f"steering_deg: {steering_deg} steering_pwm: {steering_pwm}")
 
     # Ensure steering_pwm is within the acceptable range
