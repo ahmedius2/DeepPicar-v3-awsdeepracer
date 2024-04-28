@@ -4,14 +4,12 @@
 #   "camera-webcam" "camera-null"
 ##########################################################
 camera="camera-webcam"
-# URL="http://192.168.1.194"
-# URL="http://192.168.1.200"
-URL="http://192.168.4.1"
+# URL="http://192.168.4.1"
 
 ##########################################################
 # actuator selection
 #   "actuator-drv8835", "actuator-adafruit_hat"
-#   "actuator-null"
+#   "actuator-null" "actuator-servo-deepracer"
 ##########################################################
 actuator="actuator-null"
 
