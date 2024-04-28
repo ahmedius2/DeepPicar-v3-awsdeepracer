@@ -8,36 +8,43 @@ cur_speed = 0
 MAX_SPEED = 255
 
 # Actuator API:
-#   init, stop, set/get_speed, ffw, rew, left, right, center
-def init(default_speed=50):
+#   init, set_throttle, set_steering
+
+def init(default_speed=0):
     global steering, throttle
     steering = mh.getMotor(1)
     throttle = mh.getMotor(2)
-    set_speed(default_speed)
+    set_throttle(default_speed)
     
-def set_speed(speed):
+def set_throttle(throttle_pct):
     global cur_speed
-    speed = int(MAX_SPEED * speed / 100)
+    speed = int(MAX_SPEED * throttle_pct / 100)
     cur_speed = min(MAX_SPEED, speed)
     print ("speed: %d" % cur_speed)
 
-def get_speed():
-    return int(cur_speed * 100 / MAX_SPEED)
+    if throttle_pct > 0:
+        throttle.setSpeed(cur_speed)
+        throttle.run(Adafruit_MotorHAT.FORWARD)
+    else:
+        throttle.setSpeed(-cur_speed)
+        throttle.run(Adafruit_MotorHAT.BACKWARD)
 
-def ffw():
-    throttle.setSpeed(cur_speed)    
-    throttle.run(Adafruit_MotorHAT.FORWARD)    
-
-def rew():
-    throttle.setSpeed(cur_speed)    
-    throttle.run(Adafruit_MotorHAT.BACKWARD)
+def set_steering(steering_deg):
+    global cur_steer
+    cur_steer = steering_deg
+    if steering_deg < -10:
+        left()
+    elif steering_deg > 10:
+        right()
+    else:
+        center()
 
 # steering
 def center():
     steering.setSpeed(0)
 def left():
     steering.setSpeed(MAX_SPEED)
-    steering.run(Adafruit_MotorHAT.BACKWARD)        
+    steering.run(Adafruit_MotorHAT.BACKWARD)
 def right():
     steering.setSpeed(MAX_SPEED)
     steering.run(Adafruit_MotorHAT.FORWARD)
@@ -48,4 +55,4 @@ def stop():
     steering.setSpeed(0)
     throttle.run(Adafruit_MotorHAT.RELEASE)
     steering.run(Adafruit_MotorHAT.RELEASE)
-    
+

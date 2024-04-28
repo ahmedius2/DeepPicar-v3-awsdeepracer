@@ -1,42 +1,28 @@
 import serial
 
 cur_speed = 0
+cur_steer = 0
 
 # init
 def init(default_speed=50):
     global ser
     ser = serial.Serial('/dev/ttyUSB0', 115200, timeout=1)
     stop()
-    set_speed(default_speed)
+    set_throttle(default_speed)
     print ("actuator-arduino init completed.")
 
-def set_speed(speed):
+def set_throttle(throttle_pct):
     global cur_speed
-    ser.write("t " + str(speed))
-    cur_speed = speed
-    
-def get_speed():
-    return cur_speed
+    ser.write("t " + str(throttle_pct))
+    cur_speed = throttle_pct
 
-def stop():
-    ser.write("s\n")
-        
-def ffw():
-    ser.write("a\n")    
-
-def rew():
-    ser.write("z\n")        
-
-# steering
-def center():
-    ser.write("k\n")    
-def left():
-    ser.write("j\n")
-def right():
-    ser.write("l\n")    
+def set_steering(steering_deg):
+    global cur_steer
+    ser.write("s " + str(steering_deg))
+    cur_steer = steering_deg
 
 # exit    
 def turn_off():
-    stop()
-    center()
+    set_throttle(0)
+    set_steering(0)
     ser.close()

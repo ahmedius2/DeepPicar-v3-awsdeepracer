@@ -14,6 +14,8 @@ def set_throttle(throttle_pct):
     motors.motor2.setSpeed(cur_speed)
 
 def set_steering(steering_deg):
+    global cur_steer
+    cur_steer = steering_deg
     if steering_deg < -10:
         left()
     elif steering_deg > 10:
@@ -32,4 +34,4 @@ def right():
 # exit    
 def turn_off():
     set_throttle(0)
-    center()
+    set_steering(0)

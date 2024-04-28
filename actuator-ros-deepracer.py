@@ -4,8 +4,8 @@ from deepracer_interfaces_pkg.msg import ServoCtrlMsg
 
 
 # throttle
-MAX_SPEED = 100
-cur_speed = MAX_SPEED
+cur_speed = 0
+cur_steer = 0
 
 # ros2 publisher
 publisher = None
@@ -18,47 +18,21 @@ def init(default_speed=50):
     node = rclpy.create_node('DeepPicar')
     publisher = node.create_publisher(ServoCtrlMsg, "ctrl_pkg/servo_msg", 1)
     servo_msg = ServoCtrlMsg()
-    set_speed(default_speed)
+    set_throttle(default_speed)
     
-def set_speed(speed):
-    global cur_speed
-    speed = int(MAX_SPEED * speed / 100)
-    cur_speed = min(MAX_SPEED, speed)
-
-def get_speed():
-    return int(cur_speed * 100 / MAX_SPEED)
-
-def stop():
-    global servo_msg    
-    servo_msg.throttle = 0.0
-    servo_msg.angle = 0.0
-    publisher.publish(servo_msg)
-        
-def ffw():
-    global servo_msg    
-    servo_msg.throttle = 0.5
+def set_throttle(throttle_pct):
+    global cur_speed, servo_msg
+    cur_speed = throttle_pct
+    servo_msg.throttle = cur_speed/100
     publisher.publish(servo_msg)
 
-def rew():
-    global servo_msg    
-    servo_msg.throttle = -0.5
-    publisher.publish(servo_msg)
-
-# steering
-def center():
-    global servo_msg
-    servo_msg.angle = 0.0
-    publisher.publish(servo_msg)
-def left():
-    global servo_msg    
-    servo_msg.angle = -0.5
-    publisher.publish(servo_msg)
-def right():
-    global servo_msg
-    servo_msg.angle = 0.5
+def set_steering(steering_deg):
+    global cur_steer, servo_msg
+    cur_steer = steering_deg
+    servo_msg.angle = deg2rad(steering_deg)
     publisher.publish(servo_msg)
 
 # exit    
 def turn_off():
-    stop()
-    center()
+    set_throttle(0)
+    set_steering(0)
