@@ -11,7 +11,7 @@ camera="camera-webcam"
 #   "actuator-drv8835", "actuator-adafruit_hat"
 #   "actuator-null" "actuator-servo-deepracer"
 ##########################################################
-actuator="actuator-null"
+actuator="actuator-servo-deepracer"
 
 ##########################################################
 # intputdev selection
