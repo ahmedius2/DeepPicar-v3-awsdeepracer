@@ -241,6 +241,7 @@ while True:
         args.dnn = not args.dnn
         print ("dnn mode:", args.dnn)
     elif ch == ord('q'):
+        actuator.disable()
         break
 
 
