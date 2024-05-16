@@ -128,6 +128,10 @@ def set_steering(steering_deg):
     except OSError as e:
         print(f"Failed to set steering: {e}")
 
+def ffw():
+    write_to_file(PWM_DIR + '/pwm0/enable', "1")
+    write_to_file(PWM_DIR + '/pwm1/enable', "1")
+
 def stop():
     global thr_lims
     write_to_file(PWM_DIR + '/pwm0/duty_cycle', str(thr_lims[1]))

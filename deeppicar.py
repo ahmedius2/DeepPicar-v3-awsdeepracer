@@ -8,6 +8,7 @@ import numpy as np
 import sys
 import params
 import argparse
+import input_stream
 
 from PIL import Image, ImageDraw
 
@@ -16,7 +17,7 @@ from PIL import Image, ImageDraw
 ##########################################################
 camera   = __import__(params.camera)
 actuator = __import__(params.actuator)
-inputdev = __import__(params.inputdev)
+#inputdev = __import__(params.inputdev)
 
 ##########################################################
 # global variable initialization
@@ -48,7 +49,7 @@ def g_tick():
         yield max(t + count*period - time.time(),0)
 
 def turn_off():
-    actuator.stop()
+    actuator.disable()
     camera.stop()
     if frame_id > 0:
         keyfile.close()
@@ -128,6 +129,7 @@ parser.add_argument("-f", "--hz", help="control frequnecy", type=int)
 parser.add_argument("--fpvvideo", help="Take FPV video of DNN driving", action="store_true")
 parser.add_argument("--use", help="use [tflite|tf|openvino]", type=str, default="tflite")
 parser.add_argument("--pre", help="preprocessing [resize|crop]", type=str, default="resize")
+parser.add_argument("-g", "--gamepad", help="Use gamepad", action="store_true")
 args = parser.parse_args()
 
 if args.throttle:
@@ -144,6 +146,13 @@ if args.fpvvideo:
 
 print("period (sec):", period)
 print("preprocessing:", args.pre)
+
+if args.gamepad:
+    cur_inp_type= input_stream.input_type.GAMEPAD
+else:
+    cur_inp_type= input_stream.input_type.KEYBOARD
+
+cur_inp_stream= input_stream.instantiate_inp_stream(cur_inp_type, args.throttle)
 
 ##########################################################
 # import deeppicar's DNN model
@@ -191,11 +200,6 @@ frame_arr = []
 angle_arr = []
 actuator_times = []
 
-throttle_pct = 0
-steering_deg = 0
-prev_throttle_pct = -1
-prev_steering_deg = -1
-
 # enter main loop
 while True:
     if use_thread:
@@ -207,43 +211,37 @@ while True:
     ts = time.time()
 
     # receive input (must be non blocking)
-    ch = inputdev.read_single_event()
-    
-    # process input
-    if ch == ord('j'): # left 
-        steering_deg = -30
-    elif ch == ord('k'): # center 
-        steering_deg = 0
-    elif ch == ord('l'): # right
-        steering_deg = 30
-    elif ch == ord('u'):
-        steering_deg += -10
-    elif ch == ord('o'):
-        steering_deg += 10
-    elif ch == ord('a'): # accel
-        throttle_pct += 5
+    #ch = inputdev.read_single_event()
+    if view_video:
+        cv2.imshow('frame', frame)
+        ch = cv2.waitKey(1) & 0xFF
+    else:
+        command, direction, speed = cur_inp_stream.read_inp()
+
+    if command == 'a':
+        actuator.ffw()
         start_ts = ts
-    elif ch == ord('z'): # reverse
-        throttle_pct += -5
-    elif ch == ord('s'): # stop
-        throttle_pct = 0 
+        print ("accel")
+    elif command == 's':
+        actuator.disable()
         print ("stop")
         print ("duration: %.2f" % (ts - start_ts))
         enable_record = False # stop recording as well 
         args.dnn = False # manual mode
-    elif ch == ord('r'):
+    elif command == 'z':
+        print ("TODO reverse")
+    elif command == 'r':
         enable_record = not enable_record
         print ("record mode: ", enable_record)
-    elif ch == ord('t'):
+    elif command == 't':
         print ("toggle video mode")
         view_video = not view_video
-    elif ch == ord('d'):
+    elif command == 'd':
+        print ("toggle DNN mode")
         args.dnn = not args.dnn
-        print ("dnn mode:", args.dnn)
-    elif ch == ord('q'):
+    elif command == 'q':
         actuator.disable()
         break
-
 
     if args.dnn == True:
         # 1. machine input
@@ -260,15 +258,10 @@ while True:
             angle = interpreter.get_tensor(output_index)[0][0]
 
         steering_deg = rad2deg(angle)
-        # print(steering_deg, angle)
         actuator.set_steering(steering_deg)
-        actuator.set_throttle(throttle_pct)
     else:
-        # manual mode
-        if prev_steering_deg != steering_deg: 
-            actuator.set_steering(steering_deg)
-        if prev_throttle_pct != throttle_pct:
-            actuator.set_throttle(throttle_pct)
+        actuator.set_steering(direction * 30)
+    actuator.set_throttle(speed)
 
     dur = time.time() - ts
     if dur > period:
@@ -317,9 +310,6 @@ while True:
            (ts, frame_id, angle, int((time.time() - ts)*1000)))
     # update previous steering angle
 
-    if prev_steering_deg != steering_deg or prev_throttle_pct != throttle_pct:
-        prev_steering_deg = steering_deg
-        prev_throttle_pct = throttle_pct
 
 print ("Finish..")
 if len(actuator_times):
