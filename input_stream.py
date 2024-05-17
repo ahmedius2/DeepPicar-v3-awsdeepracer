@@ -115,10 +115,10 @@ class input_gamepad(input_stream):
                     val = int(event.state)
                     if val <= -256 or val >= 256: # calib, dead area
                         shr_gamepad_state[0] = val / 32768 #/ -32768 to 32767
-                if not disable_joystick and event.ev_type == 'Absolute' and event.code == 'ABS_Y':
+                if not disable_joystick and event.ev_type == 'Absolute' and event.code == 'ABS_RY':
                     val = int(event.state)
                     #if val <= -256 or val >= 256: # calib, dead areadd
-                    shr_gamepad_state[8] = -val / 32768 * 100 #/ -32768 to 32767
+                    shr_gamepad_state[8] = -val / 32768 *100
                 elif event.ev_type == 'Absolute' and event.code == 'ABS_HAT0Y':
                     if int(event.state) == -1:
                         shr_gamepad_state[1]=1.
@@ -147,7 +147,7 @@ class input_gamepad(input_stream):
                     disable_joystick=True
                     gamepad_disable_time = time.time()
             #if shr_gamepad_state[0] < 32768//2 and shr_gamepad_state[0] > -32768//2:
-            #    shr_gamepad_state[0] = 0. # dead area
+                #shr_gamepad_state[0] = 0. # dead area
             lock.release()
 
     def read_inp(self):
@@ -155,11 +155,16 @@ class input_gamepad(input_stream):
         self.lock.acquire()
         if self.shared_arr[1] == 1.:
             self.shared_arr[1] = 0.
-            self.buffer='a'
+            self.buffer = 'a'
+            self.shared_arr[8] = 50
             #print ("accel")
         elif self.shared_arr[2] == 1.:
             self.shared_arr[2] = 0.
             self.buffer='z'
+            if self.shared_arr[8] == 0:
+                self.shared_arr[8] = -50
+            else:
+                self.shared_arr[8] = 0
             #print ("reverse")
         elif self.shared_arr[3] == 1.:
             self.shared_arr[3] = 0.
@@ -183,7 +188,7 @@ class input_gamepad(input_stream):
             #print ("toggle video mode")
 
 
-        self.direction = self.shared_arr[0] 
+        self.direction = self.shared_arr[0]
         self.speed = self.shared_arr[8] 
         self.lock.release()
 
