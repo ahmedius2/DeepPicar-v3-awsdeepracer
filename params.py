@@ -36,5 +36,5 @@ model_file = "models/{}-{}x{}x{}".format(model_name[6:], img_width, img_height, 
 ##########################################################
 # recording config 
 ##########################################################
-rec_vid_file="out-video.avi"
-rec_csv_file="out-key.csv"
+rec_vid_file="dataset/out-video.avi"
+rec_csv_file="dataset/out-key.csv"

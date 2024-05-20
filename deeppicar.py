@@ -261,6 +261,7 @@ while True:
         actuator.set_steering(steering_deg)
     else:
         actuator.set_steering(direction * 30)
+        angle = deg2rad(direction * 30)
     actuator.set_throttle(speed)
 
     dur = time.time() - ts
@@ -303,8 +304,8 @@ while True:
         vidfile.write(frame)
         #img_name = "cal_images/opencv_frame_{}.png".format(frame_id)
         #cv2.imwrite(img_name, frame)
-        if frame_id >= 1000:
-            print ("recorded 1000 frames")
+        if frame_id >= 2000:
+            print ("recorded 2000 frames")
             break
         print ("%.3f %d %.3f %d(ms)" %
            (ts, frame_id, angle, int((time.time() - ts)*1000)))
