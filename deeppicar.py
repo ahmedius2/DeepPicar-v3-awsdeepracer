@@ -30,6 +30,7 @@ cfg_cam_res = (160, 120)
 cfg_cam_fps = 30
 
 frame_id = 0
+max_frames = 2000
 angle = 0.0
 period = 0.05 # sec (=50ms)
 
@@ -67,6 +68,7 @@ def preprocess(img):
     if args.pre == "crop":
         img = crop_image(img)
     else:
+        img = img[img.shape[0]//6:]
         img = cv2.resize(img, (params.img_width, params.img_height))
     # Convert to grayscale and readd channel dimension
     if params.img_channels == 1:
@@ -304,7 +306,7 @@ while True:
         vidfile.write(frame)
         #img_name = "cal_images/opencv_frame_{}.png".format(frame_id)
         #cv2.imwrite(img_name, frame)
-        if frame_id >= 2000:
+        if frame_id >= max_frames:
             print ("recorded 2000 frames")
             break
         print ("%.3f %d %.3f %d(ms)" %

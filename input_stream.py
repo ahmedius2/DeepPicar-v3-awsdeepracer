@@ -153,16 +153,17 @@ class input_gamepad(input_stream):
     def read_inp(self):
         self.buffer = ' '
         self.lock.acquire()
+        discrete_max = 40
         if self.shared_arr[1] == 1.:
             self.shared_arr[1] = 0.
             self.buffer = 'a'
-            self.shared_arr[8] = 50
+            self.shared_arr[8] = discrete_max
             #print ("accel")
         elif self.shared_arr[2] == 1.:
             self.shared_arr[2] = 0.
             self.buffer='z'
             if self.shared_arr[8] == 0:
-                self.shared_arr[8] = -50
+                self.shared_arr[8] = -discrete_max
             else:
                 self.shared_arr[8] = 0
             #print ("reverse")
