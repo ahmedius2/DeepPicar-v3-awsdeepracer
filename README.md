@@ -8,28 +8,13 @@ DAVE-2 and can drive itself in real-time locally on a Raspberry Pi.
 
 ## Setup
 
-Install DeepPicar.
-
-    $ sudo apt install libatlas-base-dev
-    $ git clone --depth=1 https://github.com/heechul/DeepPicar-v3 -b devel
-    $ cd DeepPicar-v3 
+    $ git clone --depth=1 https://github.com/ahmedius2/DeepPicar-v3-awsdeepracer.git
+    $ cd DeepPicar-v3-awsdeepracer
     $ sudo pip3 install -r requirements.txt
 
-Edit `params.py` to select correct camera and actuator drivers. 
-The setting below represents the standard webcam and drv8835 configuration, for example. 
-
-    camera="camera-webcam"
-    actuator="actuator-drv8835"
-    
-In addition, you need to install necessary python drivers. For polulu drv8835, do following.
-
-    $ git clone https://github.com/pololu/drv8835-motor-driver-rpi.git
-    $ cd drv8835-motor-driver-rpi
-    $ sudo python3 setup.py install
-    
 ## Manual control and Data collection
 
-    $ sudo python3 deeppicar.py
+    $ sudo python3 deeppicar.py --use openvino
 
 The key commands for controlling the DeepPicar are as follows:
 
@@ -55,9 +40,6 @@ Compress all the recorded files into a single zip file, say Dataset.zip, and cop
     updating: out-key.csv (deflated 81%)
     updating: out-video.avi (deflated 3%)
 
-Move the dataset to your PC. 
-
-    $ python3 -m http.server
 
 On your PC, use your browser to download the dataset file by entering `https://<ip_addr_of_your_pi>:8000/Dataset.zip`
 
@@ -65,7 +47,7 @@ On your PC, use your browser to download the dataset file by entering `https://<
     
 Open the colab notebook. Following the notebook, you will upload the dataset to the colab, train the model, and download the model back to your PC. 
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/heechul/DeepPicar-v3/blob/devel/RunAll.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ahmedius2/DeepPicar-v3-awsdeepracer/blob/devel-servo/RunAll.ipynb)
 
 After you are done trainig, you need to copy the trained tflite model file (`large-200x66x3.tflite` by default) to the Pi as follow (alternative, you can simply copy the file via `scp` instead). 
 

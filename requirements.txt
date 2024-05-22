@@ -1,7 +1,6 @@
 opencv-python
 numpy>=1.20.0
-tflite_runtime
 openvino
-wiringpi
 uploadserver
 Pillow
+inputs
