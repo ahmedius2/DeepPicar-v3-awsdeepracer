@@ -84,6 +84,7 @@ class input_kbd(input_stream):
 
 class input_gamepad(input_stream):
     def __init__(self, speed=50):
+        self.discrete_max = speed
         self.shared_arr = Array('d', [0.]*9) # joystick pos and other buttons and finish state
         #self.finish = Value('i', 1)
         self.lock=Lock()
@@ -157,13 +158,13 @@ class input_gamepad(input_stream):
         if self.shared_arr[1] == 1.:
             self.shared_arr[1] = 0.
             self.buffer = 'a'
-            self.shared_arr[8] = discrete_max
+            self.shared_arr[8] = self.discrete_max
             #print ("accel")
         elif self.shared_arr[2] == 1.:
             self.shared_arr[2] = 0.
             self.buffer='z'
             if self.shared_arr[8] == 0:
-                self.shared_arr[8] = -discrete_max
+                self.shared_arr[8] = -self.discrete_max
             else:
                 self.shared_arr[8] = 0
             #print ("reverse")
