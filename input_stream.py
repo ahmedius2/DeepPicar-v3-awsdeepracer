@@ -154,7 +154,6 @@ class input_gamepad(input_stream):
     def read_inp(self):
         self.buffer = ' '
         self.lock.acquire()
-        discrete_max = 40
         if self.shared_arr[1] == 1.:
             self.shared_arr[1] = 0.
             self.buffer = 'a'
