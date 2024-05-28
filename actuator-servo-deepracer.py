@@ -201,11 +201,11 @@ if __name__ == "__main__":
     pwm1 = drive_calib(thr_lims[1])
     print('\n\nSet the min forward. Decrease the speed from max' \
             ' gradually until it stops. Then increase it until' \
-            'it starts moving again.')
+            ' it starts moving again.')
     pwm2 = drive_calib(pwm1)
     print('\n\nSet the max backward')
     pwm3 = drive_calib(pwm2)
-    print('\n\nSet the min forward. Decrease the speed from max' \
+    print('\n\nSet the min backward. Decrease the speed from max' \
             ' gradually until it stops. Then increase it until' \
             ' it starts moving again.')
     pwm4 = drive_calib(pwm3)
@@ -213,13 +213,13 @@ if __name__ == "__main__":
 
     #Begin steering calibration
     print('Calibrating steering now\n')
-    print('Set max left angle by pressing "a" to increase and "z" to decrease. "q" to quit\n')
+    print('\n\nSet max left angle by pressing "a" to increase and "z" to decrease. "q" to quit\n')
     spwm1 = steer_calib(srv_lims[1])
-    print('Set the min left angle (decrease until straight) by pressing "a" to increase and "z" to decrease. "q" to quit\n')
+    print('\n\nSet the min left angle (decrease until straight) by pressing "a" to increase and "z" to decrease. "q" to quit\n')
     spwm2 = steer_calib(spwm1)
-    print('Set max right angle by pressing "a" to increase and "z" to decrease. "q" to quit\n')
+    print('\n\nSet max right angle by pressing "a" to increase and "z" to decrease. "q" to quit\n')
     spwm3 = steer_calib(spwm2)
-    print('Set the min right angle (decrease until straight) by pressing "a" to increase and "z" to decrease. "q" to quit\n')
+    print('\n\nSet the min right angle (decrease until straight) by pressing "a" to increase and "z" to decrease. "q" to quit\n')
     spwm4 = steer_calib(spwm3)
     disable()
 
